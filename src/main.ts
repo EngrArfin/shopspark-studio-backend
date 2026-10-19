@@ -2,6 +2,9 @@ import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { ExpressAdapter } from '@nestjs/platform-express';
+import express from 'express';
+import type { Request, Response } from 'express';
 import { AppModule } from './app.module.js';
 
 // Automatically load environment variables from .env if present
@@ -11,8 +14,11 @@ try {
   // Ignore if .env is missing (e.g., containerized environments)
 }
 
+const server = express();
+let isInitialized = false;
+
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, new ExpressAdapter(server));
 
   // Enable CORS for frontend applications
   app.enableCors();
@@ -51,9 +57,24 @@ async function bootstrap() {
     },
   });
 
+  await app.init();
+  isInitialized = true;
+  return app;
+}
+
+// Local development: listen on port if not running in Vercel
+if (!process.env.VERCEL) {
+  const app = await bootstrap();
   const port = process.env.PORT ?? 3000;
   await app.listen(port);
   console.log(`\n🚀 Server running on: http://localhost:${port}`);
   console.log(`📑 Swagger Documentation available at: http://localhost:${port}/api/docs\n`);
 }
-await bootstrap();
+
+// Vercel serverless function entrypoint
+export default async function handler(req: Request, res: Response) {
+  if (!isInitialized) {
+    await bootstrap();
+  }
+  server(req, res);
+}
