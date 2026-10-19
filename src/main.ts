@@ -1,12 +1,21 @@
+import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { AppModule, ObserveInstrument } from './app.module.js';
+import { AppModule } from './app.module.js';
+
+// Automatically load environment variables from .env if present
+try {
+  process.loadEnvFile();
+} catch {
+  // Ignore if .env is missing (e.g., containerized environments)
+}
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
-    instrument: ObserveInstrument,
-  });
+  const app = await NestFactory.create(AppModule);
+
+  // Enable CORS for frontend applications
+  app.enableCors();
 
   // Enable global validation pipe for request DTOs
   app.useGlobalPipes(
