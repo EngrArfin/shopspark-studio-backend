@@ -51,7 +51,19 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);
+  const SWAGGER_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.18.2';
+
   SwaggerModule.setup('api/docs', app, document, {
+    customSiteTitle: 'ShopSpark Studio Backend API',
+    customfavIcon: 'https://swagger.io/favicon.ico',
+    customCssUrl: [
+      `${SWAGGER_CDN}/swagger-ui.min.css`,
+      `${SWAGGER_CDN}/swagger-ui-standalone-preset.min.css`,
+    ],
+    customJs: [
+      `${SWAGGER_CDN}/swagger-ui-bundle.min.js`,
+      `${SWAGGER_CDN}/swagger-ui-standalone-preset.min.js`,
+    ],
     swaggerOptions: {
       persistAuthorization: true,
     },
