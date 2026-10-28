@@ -5,19 +5,161 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql" // Or "mysql", "sqlite", "mongodb"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id          String   @id @default(uuid())
-  email       String   @unique
-  password    String
-  name        String?
-  phoneNumber String?
-  role        String   @default("USER") // USER, ADMIN, SELLER
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id              String           @id @default(uuid())
+  email           String           @unique
+  password        String
+  name            String?
+  phoneNumber     String?
+  role            String           @default("USER") // USER, ADMIN, SELLER, PROVIDER
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  providerProfile ProviderProfile?
+  orders          Order[]
+  reviews         Review[]
 
   @@map("users")
+}
+
+model ProviderProfile {
+  id             String          @id @default(uuid())
+  userId         String          @unique
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  storeName      String
+  storeSlug      String          @unique
+  logoUrl        String?
+  bannerUrl      String?
+  description    String?
+  contactPhone   String?
+  contactEmail   String?
+  address        String?
+  city           String?
+  country        String?
+  taxId          String?
+  rating         Float           @default(5.0)
+  totalSales     Int             @default(0)
+  isVerified     Boolean         @default(false)
+  status         String          @default("ACTIVE") // ACTIVE, PENDING_VERIFICATION, SUSPENDED
+  payoutSettings Json?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  products       Product[]
+  orders         Order[]
+  payouts        PayoutRequest[]
+
+  @@map("provider_profiles")
+}
+
+model Product {
+  id             String          @id @default(uuid())
+  providerId     String
+  provider       ProviderProfile @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  title          String
+  slug           String
+  description    String
+  price          Float
+  compareAtPrice Float?
+  costPerItem    Float?
+  stockQuantity  Int             @default(0)
+  sku            String
+  category       String
+  images         String[]
+  tags           String[]
+  isFeatured     Boolean         @default(false)
+  status         String          @default("ACTIVE") // ACTIVE, DRAFT, OUT_OF_STOCK, ARCHIVED
+  rating         Float           @default(5.0)
+  reviewsCount   Int             @default(0)
+  totalSold      Int             @default(0)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  orderItems     OrderItem[]
+  reviews        Review[]
+
+  @@map("products")
+}
+
+model Order {
+  id              String          @id @default(uuid())
+  orderNumber     String          @unique
+  providerId      String
+  provider        ProviderProfile @relation(fields: [providerId], references: [id])
+  customerId      String?
+  customer        User?           @relation(fields: [customerId], references: [id])
+  customerName    String
+  customerEmail   String
+  customerPhone   String?
+  shippingStreet  String
+  shippingCity    String
+  shippingState   String
+  shippingZip     String
+  shippingCountry String
+  subtotal        Float
+  shippingFee     Float           @default(0)
+  discount        Float           @default(0)
+  totalAmount     Float
+  status          String          @default("PENDING") // PENDING, CONFIRMED, PROCESSING, SHIPPED, DELIVERED, CANCELLED
+  paymentStatus   String          @default("PENDING") // PENDING, PAID, FAILED, REFUNDED
+  paymentMethod   String
+  trackingNumber  String?
+  carrier         String?
+  customerNotes   String?
+  timeline        Json?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  items           OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String   @id @default(uuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  title     String
+  sku       String?
+  imageUrl  String?
+  unitPrice Float
+  quantity  Int
+  subtotal  Float
+
+  @@map("order_items")
+}
+
+model PayoutRequest {
+  id                 String          @id @default(uuid())
+  referenceNumber    String          @unique
+  providerId         String
+  provider           ProviderProfile @relation(fields: [providerId], references: [id])
+  amount             Float
+  currency           String          @default("USD")
+  status             String          @default("PENDING") // PENDING, PROCESSING, COMPLETED, REJECTED
+  paymentMethod      String
+  destinationAccount String
+  note               String?
+  requestedAt        DateTime        @default(now())
+  processedAt        DateTime?
+
+  @@map("payout_requests")
+}
+
+model Review {
+  id            String    @id @default(uuid())
+  productId     String
+  product       Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId        String?
+  user          User?     @relation(fields: [userId], references: [id])
+  customerName  String
+  rating        Int
+  comment       String
+  providerReply String?
+  repliedAt     DateTime?
+  createdAt     DateTime  @default(now())
+
+  @@map("reviews")
 }
