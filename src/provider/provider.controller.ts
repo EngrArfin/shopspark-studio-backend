@@ -8,7 +8,6 @@ import {
   Param,
   Patch,
   Post,
-  Put,
   Query,
 } from '@nestjs/common';
 import {
@@ -84,7 +83,7 @@ export class ProviderController {
     return this.providerService.getProfile();
   }
 
-  @Put('profile')
+  @Patch('profile')
   @ApiOperation({
     summary: 'Update Provider Store Profile & Settings',
     description:
@@ -164,7 +163,7 @@ export class ProviderController {
     return this.providerService.createProduct(createDto);
   }
 
-  @Put('products/:id')
+  @Patch('products/:id')
   @ApiOperation({
     summary: 'Update Product Information',
     description: 'Modify title, description, price, inventory stock, images, or tags of an existing product.',
