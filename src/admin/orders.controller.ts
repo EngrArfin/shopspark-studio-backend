@@ -43,11 +43,11 @@ export class OrdersController {
   // ==========================================
   // STANDARD ORDERS API
   // ==========================================
-  @ApiTags('Admin Orders')
+  @ApiTags('Orders')
   @Get('orders')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Get All Orders (Admin Dashboard)',
+    summary: 'Get All Orders (Admin & Customer)',
     description:
       'Retrieve paginated customer orders with search filtering, status filters (PENDING, CONFIRMED, PROCESSING, SHIPPED, DELIVERED, CANCELLED), and customer info.',
   })
@@ -62,7 +62,7 @@ export class OrdersController {
     return this.adminService.getOrders(query);
   }
 
-  @ApiTags('Admin Orders')
+  @ApiTags('Orders')
   @Post('orders')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
@@ -79,7 +79,7 @@ export class OrdersController {
     return this.adminService.createOrder(dto);
   }
 
-  @ApiTags('Admin Orders')
+  @ApiTags('Orders')
   @Get('orders/my-orders')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -97,7 +97,7 @@ export class OrdersController {
     return this.adminService.getOrders(query);
   }
 
-  @ApiTags('Admin Orders')
+  @ApiTags('Orders')
   @Get('orders/:id')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -114,7 +114,7 @@ export class OrdersController {
     return this.adminService.getOrderById(id);
   }
 
-  @ApiTags('Admin Orders')
+  @ApiTags('Orders')
   @Patch('orders/:id/status')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({

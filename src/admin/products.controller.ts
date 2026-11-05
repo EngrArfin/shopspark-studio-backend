@@ -117,7 +117,7 @@ export class ProductsController {
   // ==========================================
   // PRODUCTS CATALOG ENDPOINTS (under /products)
   // ==========================================
-  @ApiTags('Admin Products')
+  @ApiTags('Products')
   @Get()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -133,7 +133,7 @@ export class ProductsController {
     return this.adminService.getProducts();
   }
 
-  @ApiTags('Admin Products')
+  @ApiTags('Products')
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -150,7 +150,7 @@ export class ProductsController {
     return this.adminService.getProductById(id);
   }
 
-  @ApiTags('Admin Products')
+  @ApiTags('Products')
   @Get(':id/activity')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -171,7 +171,7 @@ export class ProductsController {
     }
   }
 
-  @ApiTags('Admin Products')
+  @ApiTags('Products')
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
@@ -190,7 +190,7 @@ export class ProductsController {
     return this.adminService.createProduct(dto);
   }
 
-  @ApiTags('Admin Products')
+  @ApiTags('Products')
   @Patch(':id')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -211,7 +211,7 @@ export class ProductsController {
     return this.adminService.updateProduct(id, dto);
   }
 
-  @ApiTags('Admin Products')
+  @ApiTags('Products')
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({

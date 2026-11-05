@@ -79,22 +79,24 @@ async function bootstrap() {
       },
       'JWT-auth',
     )
-    // Core Platform Modules
+    // 1. Primary Core Services (in user's requested serial order)
+    .addTag('App', 'Core application health check and server status')
+    .addTag('Authentication', 'User, Admin, and Provider registration, JWT authentication, and password reset flows')
+    .addTag('Provider Dashboard', 'Seller store metrics, product inventory, order processing, and payout withdrawals')
+    .addTag('Orders', 'Standard order fulfillment, checkout order placement, shipping addresses, tracking, and statuses')
+    .addTag('Products', 'Catalog CRUD for DIY boxes and gift collections with pricing, age ranges, and included kits')
+    // 2. All Admin Management Modules
     .addTag('Admin Dashboard', 'KPI overview cards, revenue growth trends, monthly charts, system defaults & audit logs')
     .addTag('Admin User Management', 'User directory, role assignments (USER, ADMIN, PROVIDER), and customer account management')
-    .addTag('Admin Orders', 'Standard order fulfillment, checkout order placement, shipping addresses, tracking, and statuses')
     .addTag('Admin Custom Orders', 'Custom t-shirt & bespoke merchandise orders, printing notes, artwork mockups, and status updates')
     .addTag('Admin Provider Management', 'Vendor directory, onboarding applications, approval/rejection workflows, and verified badges')
-    .addTag('Admin Products', 'Catalog CRUD for DIY boxes and gift collections with pricing, age ranges, and included kits')
     .addTag('Admin DIY Activities', 'Interactive DIY craft guides, step-by-step instruction sheets, video tutorials, and PDFs')
     .addTag('Admin Blogs', 'Platform blog articles, party planning advice, parent guides, tags, and cover images')
     .addTag('Admin Affiliated Products', 'Curated partner accessories, affiliate links, pricing, and external redirects')
     .addTag('Admin Newsletter', 'Email subscriber management and promotional campaign broadcasts')
     .addTag('Admin Contact Inquiries', 'Customer support messages, bulk booking questions, and inquiry resolution status')
     .addTag('Admin Reviews & Testimonials', 'Parent reviews, provider testimonials, star ratings, and moderation')
-    // Customer & Provider Platform Services
-    .addTag('Authentication', 'User, Admin, and Provider registration, JWT authentication, and password reset flows')
-    .addTag('Provider Dashboard', 'Seller store metrics, product inventory, order processing, and payout withdrawals')
+    // 3. Customer & Platform Feature Modules
     .addTag('Quotes & Event Bookings', 'Event quote bids, customer booking reservations, and cancellation controls')
     .addTag('Stripe Provider Payment', 'Stripe Connect Express onboarding, vendor dashboard SSO, and quote payment sessions')
     .addTag('Party Planning & AI Generation', 'Automated party agendas, decoration itineraries, and gift recommendations')
