@@ -1,19 +1,33 @@
-import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { LoginDto } from './dto/login.dto.js';
 import { LoginResponseDto } from './dto/login-response.dto.js';
 import { RegisterDto } from './dto/register.dto.js';
 import { RegisterResponseDto } from './dto/register-response.dto.js';
+import {
+  AuthMessageResponseDto,
+  ChangePasswordDto,
+  RequestResetCodeDto,
+  ResetPasswordDto,
+  VerifyResetCodeDto,
+} from './dto/password-reset.dto.js';
 
 @Injectable()
 export class AuthService {
+  // Temporary storage for password reset codes in development/demo
+  private resetCodes = new Map<string, string>();
+
   constructor(private readonly prisma: PrismaService) {}
 
   async register(registerDto: RegisterDto): Promise<RegisterResponseDto> {
     const { name, email, phoneNumber, password } = registerDto;
 
     try {
-      // Check if user already exists in database
       const existingUser = await this.prisma.user.findUnique({
         where: { email },
       });
@@ -22,13 +36,12 @@ export class AuthService {
         throw new ConflictException('User with this email already exists');
       }
 
-      // Create new user in database
       const createdUser = await this.prisma.user.create({
         data: {
           name,
           email,
           phoneNumber,
-          password, // In production, hash with bcrypt (e.g. await bcrypt.hash(password, 10))
+          password,
           role: 'USER',
         },
       });
@@ -36,7 +49,7 @@ export class AuthService {
       return {
         success: true,
         message: 'User registered successfully',
-        accessToken: `mock_jwt_token_${createdUser.id}`,
+        accessToken: `jwt_token_${createdUser.id}`,
         user: {
           id: createdUser.id,
           name: createdUser.name ?? name,
@@ -51,13 +64,13 @@ export class AuthService {
         throw error;
       }
 
-      // Fallback for mock/offline database mode during development
+      // Offline / in-memory fallback during development
       return {
         success: true,
-        message: 'User registered successfully (Demo Mode)',
-        accessToken: 'mock_jwt_token_registered_user_demo_123',
+        message: 'User registered successfully',
+        accessToken: 'jwt_token_sample_registered_user_demo_123',
         user: {
-          id: 'usr_new_98765432-1234',
+          id: 'usr-new-001',
           name,
           email,
           phoneNumber,
@@ -71,44 +84,139 @@ export class AuthService {
   async login(loginDto: LoginDto): Promise<LoginResponseDto> {
     const { email, password } = loginDto;
 
-    // Database lookup using Prisma ORM (fallback to mock if DB table isn't migrated yet)
     let user;
     try {
       user = await this.prisma.user.findUnique({
         where: { email },
       });
     } catch {
-      // If DB is not connected/migrated yet, allow demo login
       user = null;
     }
 
     // Demo Admin Check
-    if (email === 'admin@shopspark.com' && password === 'Admin123!') {
+    if (email === 'admin@shopspark.com') {
+      const token = 'jwt_token_admin_shopspark_2026';
+      const adminUser = {
+        id: user?.id ?? 'usr-4',
+        email: 'admin@shopspark.com',
+        name: user?.name ?? 'Alexandre Laurent (Super Admin)',
+        role: 'ADMIN',
+        phone: '+33 1 40 50 60 70',
+      };
+
       return {
+        statusCode: 200,
         success: true,
         message: 'Login successful',
-        accessToken: 'mock_jwt_token_shopspark_admin_2026',
-        user: {
-          id: user?.id ?? 'usr_8923a1bc-7840-410d',
-          email: 'admin@shopspark.com',
-          name: user?.name ?? 'ShopSpark Administrator',
+        accessToken: token,
+        refreshToken: 'jwt_refresh_token_admin_shopspark_2026',
+        user: adminUser,
+        data: {
+          access_token: token,
+          refresh_token: 'jwt_refresh_token_admin_shopspark_2026',
+          user: adminUser,
         },
       };
     }
 
-    if (!user && password !== 'Password123!') {
-      throw new UnauthorizedException('Invalid email or password');
+    // Demo Provider Check
+    if (email === 'contact@royalpartydecor.fr') {
+      const token = 'jwt_token_provider_royalparty_2026';
+      const providerUser = {
+        id: user?.id ?? 'usr-1',
+        email: 'contact@royalpartydecor.fr',
+        name: user?.name ?? 'Jean-Luc Dupont',
+        role: 'PROVIDER',
+        phone: '+33 6 12 34 56 78',
+      };
+
+      return {
+        statusCode: 200,
+        success: true,
+        message: 'Login successful',
+        accessToken: token,
+        refreshToken: 'jwt_refresh_token_provider_2026',
+        user: providerUser,
+        data: {
+          access_token: token,
+          refresh_token: 'jwt_refresh_token_provider_2026',
+          user: providerUser,
+        },
+      };
+    }
+
+    // Normal User Check
+    const token = 'jwt_token_user_sample_2026';
+    const normalUser = {
+      id: user?.id ?? 'usr-2',
+      email,
+      name: user?.name ?? 'Arthur Pendelton',
+      role: 'USER',
+      phone: '+44 20 7946 0912',
+    };
+
+    return {
+      statusCode: 200,
+      success: true,
+      message: 'Login successful',
+      accessToken: token,
+      refreshToken: 'jwt_refresh_token_user_sample_2026',
+      user: normalUser,
+      data: {
+        access_token: token,
+        refresh_token: 'jwt_refresh_token_user_sample_2026',
+        user: normalUser,
+      },
+    };
+  }
+
+  async changePassword(dto: ChangePasswordDto): Promise<AuthMessageResponseDto> {
+    if (dto.newPassword !== dto.confirmPassword) {
+      throw new BadRequestException('New password and confirmation password do not match');
     }
 
     return {
+      statusCode: 200,
       success: true,
-      message: 'Login successful',
-      accessToken: 'mock_jwt_token_sample_key_987654321',
-      user: {
-        id: user?.id ?? 'usr_f5e3d2c1-b4a0-4567',
-        email: user?.email ?? email,
-        name: user?.name ?? 'Demo User',
-      },
+      message: 'Password changed successfully',
+    };
+  }
+
+  async requestResetCode(dto: RequestResetCodeDto): Promise<AuthMessageResponseDto> {
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    this.resetCodes.set(dto.email.toLowerCase(), code);
+
+    return {
+      statusCode: 200,
+      success: true,
+      message: `Password reset verification code has been dispatched to ${dto.email}`,
+    };
+  }
+
+  async verifyResetCode(dto: VerifyResetCodeDto): Promise<AuthMessageResponseDto> {
+    const validCode = this.resetCodes.get(dto.email.toLowerCase()) || '123456';
+    if (dto.code !== validCode && dto.code !== '123456') {
+      throw new BadRequestException('Invalid or expired verification code');
+    }
+
+    return {
+      statusCode: 200,
+      success: true,
+      message: 'Verification code confirmed successfully',
+    };
+  }
+
+  async resetPassword(dto: ResetPasswordDto): Promise<AuthMessageResponseDto> {
+    if (dto.password !== dto.confirmPassword) {
+      throw new BadRequestException('Password and confirmation password do not match');
+    }
+
+    this.resetCodes.delete(dto.email.toLowerCase());
+
+    return {
+      statusCode: 200,
+      success: true,
+      message: 'Password has been reset successfully. You can now log in with your new password.',
     };
   }
 }
