@@ -7,6 +7,7 @@ import { ProviderModule } from './provider/provider.module.js';
 import { UsersModule } from './users/users.module.js';
 import { AdminModule } from './admin/admin.module.js';
 import { PlatformModule } from './platform/platform.module.js';
+import { ChatModule } from './chat/chat.module.js';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { PlatformModule } from './platform/platform.module.js';
     ProviderModule,
     AdminModule,
     PlatformModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],
